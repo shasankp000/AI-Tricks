@@ -17,8 +17,12 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FunctionCallerV2 {
+
+    private static final Logger logger = LoggerFactory.getLogger(FunctionCallerV2.class);
 
     public static class ExecutionRecord {
         String command;
@@ -146,14 +150,14 @@ public class FunctionCallerV2 {
         OllamaAPI ollamaAPI = new OllamaAPI(host);
         ollamaAPI.setRequestTimeoutSeconds(90);
 
-        OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(OllamaModelType.LLAMA2); // LLAMA2 is surprisingly much less error prone compared to phi3.
+        OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(OllamaModelType.LLAMA2); // LLAMA2 is surprisingly much less error-prone compared to phi3.
 
         String prompt = buildPrompt(toolBuilder());
 
         OllamaChatResult chatResult = null;
         Scanner scanner = new Scanner(System.in);
-        Gson gson = new Gson();
-        String response = "";
+        Gson ignored = new Gson();
+        String response;
 
         List<ExecutionRecord> executionHistory;
         String feedbackPrompt = "";
@@ -195,7 +199,7 @@ public class FunctionCallerV2 {
 
 
             } catch (OllamaBaseException | IOException | InterruptedException | JsonSyntaxException e) {
-                e.printStackTrace();
+                logger.error("{}", (Object) e.getStackTrace());
             }
 
             System.out.println("Enter 'exit' to quit.");
@@ -219,7 +223,7 @@ public class FunctionCallerV2 {
 
         // Ensure proper JSON format
         jsonString = jsonString.replaceAll("\\s*:\\s*", ":").replaceAll("\\s*,\\s*", ",");
-        jsonString = jsonString.replaceAll("\\}\\s*\\]", "}]");
+        jsonString = jsonString.replaceAll("}\\s*]", "}]");
 
         // If the JSON still seems malformed, attempt to manually correct it
         if (!isValidJson(jsonString)) {
@@ -310,7 +314,7 @@ public class FunctionCallerV2 {
             }
 
             // Simulate function execution
-            String result = "Executed " + functionName + " with parameters " + params.toString();
+            String result = "Executed " + functionName + " with parameters " + params;
             String actionOutput = callFunction(functionName, parameterMap);
             System.out.println(result + "\n " + "Output: " + actionOutput);
 
