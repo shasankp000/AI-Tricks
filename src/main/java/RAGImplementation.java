@@ -11,14 +11,16 @@ public class RAGImplementation {
     public static class Conversation {
         // DS for the SQL return type.
         int id;
+        String timestamp;
         String prompt;
         String response;
         List<Double> promptEmbedding;
         List<Double> responseEmbedding;
         double similarity;
 
-        Conversation(int id, String prompt, String response, List<Double> promptEmbedding, List<Double> responseEmbedding) {
+        Conversation(int id, String timestamp ,String prompt, String response, List<Double> promptEmbedding, List<Double> responseEmbedding) {
             this.id = id;
+            this.timestamp = timestamp;
             this.prompt = prompt;
             this.response = response;
             this.promptEmbedding = promptEmbedding;
@@ -90,10 +92,11 @@ public class RAGImplementation {
         List<Conversation> conversations = new ArrayList<>();
         try (Connection connection = DriverManager.getConnection(DB_URL);
              Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT id, prompt, response, prompt_embedding, response_embedding FROM conversations")) {
+             ResultSet resultSet = statement.executeQuery("SELECT id, timestamp, prompt, response, prompt_embedding, response_embedding FROM conversations")) {
 
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
+                String timeStamp = resultSet.getString("timestamp");
                 String prompt = resultSet.getString("prompt");
                 String response = resultSet.getString("response");
                 String promptEmbeddingString = resultSet.getString("prompt_embedding");
@@ -101,7 +104,7 @@ public class RAGImplementation {
                 List<Double> promptEmbedding = parseEmbedding(promptEmbeddingString);
                 List<Double> responseEmbedding = parseEmbedding(responseEmbeddingString);
 
-                conversations.add(new Conversation(id, prompt, response, promptEmbedding, responseEmbedding));
+                conversations.add(new Conversation(id, timeStamp ,prompt, response, promptEmbedding, responseEmbedding));
             }
         }
         catch (Exception e) {
